@@ -1,0 +1,5 @@
+atlassian-python-api
+requests
+beautifulsoup4
+psycopg[binary]
+rich
