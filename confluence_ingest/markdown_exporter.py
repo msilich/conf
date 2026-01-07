@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 
 from .text_clean import html_to_markdown
@@ -18,6 +19,20 @@ def _write_markdown(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
         f.write(content)
+
+
+def _safe_filename(title: str) -> str:
+    if not title:
+        return "untitled"
+    name = title.strip()
+    name = re.sub(r"[\\/:*?\"<>|]", "-", name)
+    name = re.sub(r"\s+", " ", name)
+    name = name.strip(" .")
+    return name or "untitled"
+
+
+def _escape_yaml(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def export_markdown_directory(input_dir: Path, output_dir: Path) -> None:
@@ -39,14 +54,20 @@ def export_markdown_directory(input_dir: Path, output_dir: Path) -> None:
         html = page.get("body_storage") or ""
 
         body_md = html_to_markdown(html)
-        header_lines = []
-        if title:
-            header_lines.append(f"# {title}")
-        if url_full:
-            header_lines.append(f"Source: {url_full}")
-        header = "\n".join(header_lines).strip()
-        markdown = f"{header}\n\n{body_md}\n" if header else f"{body_md}\n"
+        front_matter = "\n".join(
+            [
+                "---",
+                f'title: "{_escape_yaml(title)}"',
+                f'url: "{_escape_yaml(url_full)}"',
+                "---",
+            ]
+        )
+        header = f"# {title}".strip() if title else ""
+        markdown = f"{front_matter}\n\n{header}\n\n{body_md}\n" if header else f"{front_matter}\n\n{body_md}\n"
 
-        out_path = output_dir / f"{page_id}.md"
+        filename = _safe_filename(title)
+        out_path = output_dir / f"{filename}.md"
+        if out_path.exists():
+            out_path = output_dir / f"{filename}-{page_id}.md"
         _write_markdown(out_path, markdown)
         log.info("Wrote %s", out_path)
