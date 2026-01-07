@@ -18,6 +18,7 @@ CLI zum Scrapen von Confluence-Seiten und Laden in PostgreSQL/pgvector.
 ## Nutzung
 - Scrapen: `python -m confluence_ingest scrape --space-key IT4PLT --root-page-id 130840771 --out-dir data/raw`
 - Laden: `python -m confluence_ingest load --in-dir data/raw/IT4PLT --chunk-size 1200 --chunk-overlap 200`
+- Markdown export: `python -m confluence_ingest export-md --in-dir data/raw/IT4PLT --out-dir data/md/IT4PLT`
 - Full-Run: `python -m confluence_ingest full --space-key IT4PLT --root-page-id 130840771 --data-dir data/raw`
 - Dry-Run (kein DB-Write): `--dry-run`
 

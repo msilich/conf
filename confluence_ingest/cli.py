@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+from .markdown_exporter import export_markdown_directory
 from .scraper import scrape_space
 from .loader import load_directory
 
@@ -71,6 +72,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Perform all steps except writing to the database",
     )
 
+    export_md = sub.add_parser("export-md", help="Export scraped JSON to Markdown files")
+    export_md.add_argument("--in-dir", type=Path, required=True, help="Input directory for JSON files")
+    export_md.add_argument("--out-dir", type=Path, required=True, help="Output directory for Markdown files")
+
     return parser
 
 
@@ -110,6 +115,11 @@ def main(argv: list[str] | None = None) -> int:
             chunk_size=args.chunk_size,
             chunk_overlap=args.chunk_overlap,
             dry_run=args.dry_run,
+        )
+    elif args.command == "export-md":
+        export_markdown_directory(
+            input_dir=args.in_dir,
+            output_dir=args.out_dir,
         )
     else:
         parser.error("Unknown command")
