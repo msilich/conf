@@ -100,11 +100,24 @@ def _render_markdown(node: Tag | NavigableString) -> str:
         return "\n".join(items) + "\n\n" if items else ""
     if name == "table":
         rows = []
-        for row in node.find_all("tr", recursive=False):
-            cells = [c.get_text(" ", strip=True) for c in row.find_all(["th", "td"], recursive=False)]
+        header_row_idx = None
+        for row in node.find_all("tr", recursive=True):
+            cells = [c.get_text(" ", strip=True) for c in row.find_all(["th", "td"], recursive=True)]
             if cells:
-                rows.append(" | ".join(cells))
-        return "\n".join(rows) + "\n\n" if rows else ""
+                if header_row_idx is None and row.find("th", recursive=True):
+                    header_row_idx = len(rows)
+                rows.append([_escape_table_cell(c) for c in cells])
+        if not rows:
+            return ""
+        header_idx = header_row_idx if header_row_idx is not None else 0
+        header = rows[header_idx]
+        body_rows = [r for i, r in enumerate(rows) if i != header_idx]
+        sep = ["---"] * len(header)
+        lines = ["| " + " | ".join(header) + " |", "| " + " | ".join(sep) + " |"]
+        for row in body_rows:
+            padded = row + [""] * (len(header) - len(row))
+            lines.append("| " + " | ".join(padded[: len(header)]) + " |")
+        return "\n".join(lines) + "\n\n"
 
     return _render_children_markdown(node)
 
@@ -114,3 +127,7 @@ def _render_children_markdown(node: Tag) -> str:
     for child in node.children:
         parts.append(_render_markdown(child))
     return "".join(parts)
+
+
+def _escape_table_cell(text: str) -> str:
+    return text.replace("|", "\\|")
