@@ -109,7 +109,10 @@ def _render_markdown(node: Tag | NavigableString) -> str:
                 rows.append([_escape_table_cell(c) for c in cells])
         if not rows:
             return ""
-        header_idx = header_row_idx if header_row_idx is not None else 0
+        if header_row_idx is None:
+            header_idx = _pick_header_row_index(rows)
+        else:
+            header_idx = header_row_idx
         header = rows[header_idx]
         body_rows = [r for i, r in enumerate(rows) if i != header_idx]
         sep = ["---"] * len(header)
@@ -131,3 +134,14 @@ def _render_children_markdown(node: Tag) -> str:
 
 def _escape_table_cell(text: str) -> str:
     return text.replace("|", "\\|")
+
+
+def _pick_header_row_index(rows: list[list[str]]) -> int:
+    best_idx = 0
+    best_score = -1
+    for idx, row in enumerate(rows):
+        non_empty = sum(1 for cell in row if cell.strip())
+        if non_empty > best_score:
+            best_score = non_empty
+            best_idx = idx
+    return best_idx
