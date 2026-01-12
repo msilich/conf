@@ -51,7 +51,7 @@ def export_markdown_directory(input_dir: Path, output_dir: Path) -> None:
         page_id = str(page.get("page_id"))
         title = page.get("title") or ""
         url_full = page.get("url_full") or page.get("url_short") or ""
-        html = page.get("body_storage") or ""
+        html = page.get("body_export_view") or page.get("body_view") or page.get("body_storage") or ""
 
         body_md = html_to_markdown(html)
         front_matter = "\n".join(
