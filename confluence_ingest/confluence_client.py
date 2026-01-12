@@ -58,7 +58,7 @@ class ConfluenceClient:
         return self._with_retries(
             lambda: self.client.get_page_by_id(
                 page_id,
-                expand="ancestors,body.storage,version,space,_links,metadata.labels",
+                expand="ancestors,body.storage,body.view,body.export_view,version,space,_links,metadata.labels",
             )
         )
 
@@ -85,7 +85,7 @@ class ConfluenceClient:
                     type="page",
                     start=start,
                     limit=batch_size,
-                    expand="ancestors,body.storage,version,space,_links,metadata.labels",
+                    expand="ancestors,body.storage,body.view,body.export_view,version,space,_links,metadata.labels",
                 )
             )
             values = resp.get("results", []) if isinstance(resp, dict) else resp

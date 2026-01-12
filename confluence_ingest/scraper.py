@@ -26,6 +26,8 @@ class PageRecord:
     url_short: Optional[str]
     ancestors: List[Dict[str, Any]]
     body_storage: str
+    body_view: str
+    body_export_view: str
     labels: List[str]
     hash: str
 
@@ -56,7 +58,10 @@ def _build_urls(base_url: str, links: Dict[str, Any]) -> tuple[Optional[str], Op
 
 def _extract_page_record(raw: Dict[str, Any], base_url: str) -> PageRecord:
     page_id = str(raw.get("id"))
-    body_storage = raw.get("body", {}).get("storage", {}).get("value", "") or ""
+    body = raw.get("body", {}) or {}
+    body_storage = body.get("storage", {}).get("value", "") or ""
+    body_view = body.get("view", {}).get("value", "") or ""
+    body_export_view = body.get("export_view", {}).get("value", "") or ""
     version_info = raw.get("version") or {}
     links = raw.get("_links") or {}
     url_full, url_short = _build_urls(base_url, links)
@@ -76,6 +81,8 @@ def _extract_page_record(raw: Dict[str, Any], base_url: str) -> PageRecord:
         url_short=url_short,
         ancestors=ancestors,
         body_storage=body_storage,
+        body_view=body_view,
+        body_export_view=body_export_view,
         labels=labels,
         hash=content_hash,
     )
